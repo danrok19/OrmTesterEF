@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Persistence;
 using System;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
+using Application.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,8 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-
+builder.Services.AddMediatR(x => 
+    x.RegisterServicesFromAssemblyContaining<GetUserList.Handler>());
 
 var app = builder.Build();
 

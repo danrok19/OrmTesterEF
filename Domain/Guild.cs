@@ -1,27 +1,26 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Domain
 {
-    [Table("users")]
-    public class User
+    [Table("guild")]
+    public class Guild
     {
         [Key]
-        [Column("id")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("id")]
         public long Id { get; set; }
 
-        [Column("username")]
-        public required string Username { get; set; }
+        [Column("name")]
+        public required string Name { get; set; }
 
-        [Column("password")]
-        public required string Password { get; set; }
-
-        [ForeignKey("AccountDeatails")]
-        [Column("account_details_id")]
-        public long? AccountDetailsId { get; set; }
-
-        public virtual AccountDetails? AccountDetails { get; set; }
+        [Column("level_progression")]
+        public int LevelProgression { get; set; } = 0;
 
         public virtual ICollection<Character>? Characters { get; set; }
 
@@ -33,6 +32,5 @@ namespace Domain
             }
             Characters.Add(character);
         }
-
     }
 }
