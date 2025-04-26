@@ -69,6 +69,126 @@ namespace API.Controllers
                 createDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
             }
 
+            for (int j = 0; j < 3; j++)
+            {
+                List<Equipment> equipments = new List<Equipment>();
+                for (int i = 0; i < count; i++)
+                {
+                    Equipment equipment = new Equipment
+                    {
+                        Name = GenerateRandomString(18),
+                        Type = GenerateRandomString(10),
+                        Statistics = random.Next(1, 1000),
+                        Cost = random.Next(1, 10000),
+                    };
+                    equipments.Add(equipment);
+                }
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new CreateOnlyEquipments.Command { Equipments = equipments});
+                stopwatch.Stop();
+                createDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
+            }
+
+            for (int j = 0; j < 10; j++)
+            {
+                List<User> users = new List<User>();
+                for (int i = 0; i < count; i++)
+                {
+                    User user = new User
+                    {
+                        Username = GenerateRandomString(20),
+                        Password = GenerateRandomString(15)
+                    };
+
+                    users.Add(user);
+                }
+                List<User> UsersList = await Mediator.Send(new CreateOnlyUsers.Command { Users = users });
+
+                List<AccountDetails> accountDetails = new List<AccountDetails>();
+
+                for (int i = 0; i < count; i++)
+                {
+                    AccountDetails details = new AccountDetails
+                    {
+                        Email = GenerateRandomString(20) + "@mail.com",
+                        IsPremium = false,
+                        //SignupDate = DateTime.Today,
+                        User = users[i]
+                    };
+                    accountDetails.Add(details);
+
+                }
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new CreateAccountDetails.Command { AccountDetails = accountDetails });
+                stopwatch.Stop();
+                createDTO.AddOneToOne(stopwatch.ElapsedMilliseconds);
+
+            }
+
+            for (int j = 0; j < 5; j++)
+            {
+                List<User> users = new List<User>();
+                for (int i = 0; i < count; i++)
+                {
+                    User user = new User
+                    {
+                        Username = GenerateRandomString(20),
+                        Password = GenerateRandomString(15)
+                    };
+
+                    users.Add(user);
+                }
+                List<User> UsersList = await Mediator.Send(new CreateOnlyUsers.Command { Users = users });
+
+                List<Character> characters = new List<Character>();
+
+                for (int i = 0; i < count; i++)
+                {
+                    Character character = new Character
+                    {
+                        CharacterType = "CharcterType" + i,
+                        Currency = random.Next(1, 1000),
+                        //LevelProgression = 1,
+                        User = users[random.Next(0, users.Count() - 1)]
+                    };
+                    characters.Add(character);
+
+                }
+
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new CreateCharacters.Command { Characters = characters });
+                stopwatch.Stop();
+                createDTO.AddOneToMany(stopwatch.ElapsedMilliseconds);
+
+                List<Character> charactersList = await Mediator.Send(new GetCharactersWOutGuild.Query { });
+
+                List <Guild> guilds = new List<Guild>();
+                for (int i = 0; i < count; i++)
+                {
+                    Guild guild = new Guild
+                    {
+                        Name = GenerateRandomString(12),
+                        LevelProgression = random.Next(1, 10)
+                    };
+                    Character c = charactersList[random.Next(0, (charactersList.Count - 1))];
+                    guild.add(c);
+                    charactersList.Remove(c);
+
+                    Character c1 = charactersList[random.Next(0, (charactersList.Count - 1))];
+                    guild.add(c1);
+                    charactersList.Remove(c1);
+
+                    guilds.Add(guild);
+
+                }
+                Stopwatch stopwatch1 = Stopwatch.StartNew();
+                List<Guild> guildList = await Mediator.Send(new CreateGuilds.Command { Guilds = guilds });
+                stopwatch1.Stop();
+                createDTO.AddOneToMany(stopwatch.ElapsedMilliseconds);
+
+
+            }
+
             return createDTO;
         }
 

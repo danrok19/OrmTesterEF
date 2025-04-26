@@ -15,7 +15,7 @@ namespace Domain
         public required string CharacterType { get; set; }
 
         [Column("currency")]
-        public long currency { get; set; }
+        public long Currency { get; set; }
 
         [ForeignKey("User")]
         [Column("user_id")]
