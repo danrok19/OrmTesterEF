@@ -214,6 +214,42 @@ namespace API.Controllers
                 createDTO.AddManyToMany(stopwatch.ElapsedMilliseconds);
             }
 
+            for ( int j = 0; j < 5; j++ )
+            {
+                List<Character> characters = await Mediator.Send(new GetCharactersRandom.Query { count = count });
+                List<Boss> bosses = await Mediator.Send(new GetBossesLimit.Query { limit = count });
+
+                List<Fight> fights = new List<Fight>();
+
+                for (int i = 0; i < count; i++)
+                {
+                    long characterId = characters[random.Next(0, characters.Count - 1)].Id;
+                    long bossId = bosses[random.Next(0, bosses.Count - 1)].Id;
+
+                    // Check if a fight with the same CharacterId and BossId already exists in the fights list
+                    if (!fights.Any(f => f.CharacterId == characterId && f.BossId == bossId))
+                    {
+                        Fight fight = new Fight
+                        {
+                            CharacterId = characterId,
+                            BossId = bossId,
+                            IsCharacterWin = new Random().Next(0, 2) == 1,
+                            Time = DateTime.UtcNow
+                        };
+                        fights.Add(fight);
+                    }
+                    else
+                    {
+                        i--;
+                    }
+
+                }
+                Stopwatch stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new AddFights.Command { Fights = fights });
+                stopwatch.Stop();
+                createDTO.AddManyToMany(stopwatch.ElapsedMilliseconds);
+            }
+
             return createDTO;
         }
 
