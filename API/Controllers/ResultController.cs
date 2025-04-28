@@ -142,7 +142,7 @@ namespace API.Controllers
 
                 List<Character> characters = new List<Character>();
 
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < count * 2; i++)
                 {
                     Character character = new Character
                     {
@@ -186,7 +186,32 @@ namespace API.Controllers
                 stopwatch1.Stop();
                 createDTO.AddOneToMany(stopwatch.ElapsedMilliseconds);
 
+            }
 
+            for (int j = 0; j < 5; j++)
+            {
+                List<Equipment> equipments = await Mediator.Send(new GetEquipmentsRandom.Query { count = count});
+                List<Character> characters = await Mediator.Send(new GetCharactersRandom.Query { count = count});
+
+                List<Character> charactersWithEquipments = new List<Character>();
+                Character character = null;
+                for (int i = 0; i < count; i++)
+                {
+                    int addEqCount = random.Next(0, count);
+                    character = characters[random.Next(0, characters.Count - 1)];
+                    for (int z = 0; z < addEqCount; z++)
+                    {
+                        character.add(equipments[random.Next(0, equipments.Count - 1)]);
+                    }
+                    charactersWithEquipments.Add(character);
+                    characters.Remove(character);
+                    i += addEqCount;
+                }
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new AddEquipmentsToCharacters.Command { CharactersWithEquipments = charactersWithEquipments });
+                stopwatch.Stop();
+                createDTO.AddManyToMany(stopwatch.ElapsedMilliseconds);
             }
 
             return createDTO;
