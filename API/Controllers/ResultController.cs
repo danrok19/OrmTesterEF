@@ -4,6 +4,7 @@ using Application.Queries;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Persistence;
 using System.Diagnostics;
@@ -252,6 +253,108 @@ namespace API.Controllers
 
             return createDTO;
         }
+
+
+        [HttpPut("update/{count}")]
+        public async Task<ActionResult<UpdateDTO>> UpdateUsers(int count)
+        {
+            UpdateDTO updateDTO = new UpdateDTO();
+
+            for (int j = 0; j < 4; j++)
+            {
+                List<User> users = await Mediator.Send(new GetUsersLimit.Query { count = count });
+
+                List<User> newUsers = new List<User>();
+
+                for (int i = 0; i < count; i++)
+                {
+                    User user = new User
+                    {
+                        Username = GenerateRandomString(20),
+                        Password = GenerateRandomString(15)
+                    };
+
+                    newUsers.Add(user);
+                }
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new UpdateOnlyUsers.Command { Users = users, NewData = newUsers });
+                stopwatch.Stop();
+                updateDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
+            }
+
+
+            var random = new Random();
+            for (int j = 0; j < 3; j++)
+            {
+                List<Boss> bosses = await Mediator.Send(new GetBossesLimit.Query { limit = count });
+                List<Boss> newBosses = new List<Boss>();
+                for (int i = 0; i < count; i++)
+                {
+                    Boss boss = new Boss
+                    {
+                        Name = GenerateRandomString(18),
+                        DifficultyLevel = random.Next(1, 101)
+                    };
+
+                    newBosses.Add(boss);
+                }
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new UpdateOnlyBosses.Command { Bosses = bosses, NewData = newBosses });
+                stopwatch.Stop();
+                updateDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
+            }
+
+            for (int j = 0; j < 3; j++)
+            {
+                List<Equipment> equipments = await Mediator.Send(new GetEquipmentsRandom.Query { count = count });
+                List<Equipment> newEquipments = new List<Equipment>();
+                for (int i = 0; i < count; i++)
+                {
+                    Equipment equipment = new Equipment
+                    {
+                        Name = GenerateRandomString(18),
+                        Type = GenerateRandomString(10),
+                        Statistics = random.Next(1, 1000),
+                        Cost = random.Next(1, 10000),
+                    };
+                    newEquipments.Add(equipment);
+                }
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new UpdateOnlyEquipments.Command { Equipments = equipments, NewData = newEquipments });
+                stopwatch.Stop();
+                updateDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
+            }
+
+            for ( int j = 0; j < 10; j++ )
+            {
+
+                List<AccountDetails> accountDetails = await Mediator.Send(new GetAccountDetailsLimit.Query { count = count});
+                List<AccountDetails> newAccountDetails = new List<AccountDetails>();
+
+                for (int i = 0; i < count; i++)
+                {
+                    AccountDetails details = new AccountDetails
+                    {
+                        Email = GenerateRandomString(20) + "@mail.com",
+                        IsPremium = false,
+                        //SignupDate = DateTime.Today,
+                    };
+                    newAccountDetails.Add(details);
+
+                }
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new UpdateAccountDetails.Command { AccountDetails = accountDetails, NewData = newAccountDetails });
+                stopwatch.Stop();
+                updateDTO.AddOneToOne(stopwatch.ElapsedMilliseconds);
+            }
+
+
+
+
+            return updateDTO;
+        }
+
+
 
         private string GenerateRandomString(int length)
         {
