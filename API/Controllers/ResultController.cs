@@ -393,6 +393,48 @@ namespace API.Controllers
                 stopwatch1.Stop();
                 updateDTO.AddOneToMany(stopwatch.ElapsedMilliseconds);
             }
+
+            for ( int j = 0; j < 5; j++ )
+            {
+                List<Equipment> equipments = await Mediator.Send(new GetEquipmentsUsed.Query { count = count });
+                List<Equipment> newEquipments = new List<Equipment>();
+                for (int i = 0; i < count; i++)
+                {
+                    Equipment equipment = new Equipment
+                    {
+                        Name = GenerateRandomString(18),
+                        Type = GenerateRandomString(10),
+                        Statistics = random.Next(1, 1000),
+                        Cost = random.Next(1, 10000),
+                    };
+                    newEquipments.Add(equipment);
+                }
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new UpdateOnlyEquipments.Command { Equipments = equipments, NewData = newEquipments });
+                stopwatch.Stop();
+                updateDTO.AddManyToMany(stopwatch.ElapsedMilliseconds);
+
+            }
+
+            for (int j = 0; j < 5; j++)
+            {
+                List<Fight> fights = await Mediator.Send(new GetFightsLimit.Query { count = count });
+                List<Fight> newFights = new List<Fight>();
+
+                for (int i = 0; i < count; i++)
+                {
+                    Fight fight = new Fight
+                    {
+                        IsCharacterWin = new Random().Next(0, 2) == 1,
+                        Time = DateTime.UtcNow
+                    };
+                    newFights.Add(fight);
+                }
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new UpdateFights.Command { Fights = fights, NewData = newFights });
+                stopwatch.Stop();
+                updateDTO.AddManyToMany(stopwatch.ElapsedMilliseconds);
+            }
             
             
 
