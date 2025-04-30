@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Persistence;
 using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 
 namespace API.Controllers
 {
@@ -262,7 +263,7 @@ namespace API.Controllers
 
             for (int j = 0; j < 4; j++)
             {
-                List<User> users = await Mediator.Send(new GetUsersLimit.Query { count = count });
+                List<User> users = await Mediator.Send(new GetUsersWoutAny.Query { count = count });
 
                 List<User> newUsers = new List<User>();
 
@@ -306,7 +307,7 @@ namespace API.Controllers
 
             for (int j = 0; j < 3; j++)
             {
-                List<Equipment> equipments = await Mediator.Send(new GetEquipmentsRandom.Query { count = count });
+                List<Equipment> equipments = await Mediator.Send(new GetEquipmentWoutCharacter.Query { count = count });
                 List<Equipment> newEquipments = new List<Equipment>();
                 for (int i = 0; i < count; i++)
                 {
@@ -349,6 +350,51 @@ namespace API.Controllers
             }
 
 
+            for ( int j = 0; j < 5; j++ )
+            {
+                List<Character> characters = await Mediator.Send(new GetCharactersRandom.Query { count = count });
+                List<Character> newCharacters = new List<Character>();
+
+                for (int i = 0; i < count * 2; i++)
+                {
+                    Character character = new Character
+                    {
+                        CharacterType = "CharcterType" + random.Next(0, 1000),
+                        Currency = random.Next(1, 1000),
+                        //LevelProgression = 1,
+                        //User = users[random.Next(0, users.Count() - 1)]
+                    };
+                    newCharacters.Add(character);
+
+                }
+
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new UpdateCharacters.Command { Characters = characters, NewData = newCharacters });
+                stopwatch.Stop();
+                updateDTO.AddOneToMany(stopwatch.ElapsedMilliseconds);
+
+
+
+                List<Guild> guilds = await Mediator.Send(new GetGuildsLimit.Query { count = count });
+                List<Guild> newGuilds = new List<Guild>();
+                for (int i = 0; i < count; i++)
+                {
+                    Guild guild = new Guild
+                    {
+                        Name = GenerateRandomString(12),
+                        LevelProgression = random.Next(1, 100)
+                    };
+
+                    newGuilds.Add(guild);
+
+                }
+                Stopwatch stopwatch1 = Stopwatch.StartNew();
+                List<Guild> guildList = await Mediator.Send(new UpdateGuilds.Command { Guilds = guilds, NewData = newGuilds });
+                stopwatch1.Stop();
+                updateDTO.AddOneToMany(stopwatch.ElapsedMilliseconds);
+            }
+            
+            
 
 
             return updateDTO;
