@@ -570,6 +570,159 @@ namespace API.Controllers
             }
 
 
+            for ( int j = 0; j < 5; j++)
+            {
+                List<User> users = new List<User>();
+                for (int i = 0; i < count; i++)
+                {
+                    User user = new User
+                    {
+                        Username = GenerateRandomString(20),
+                        Password = GenerateRandomString(15)
+                    };
+
+                    users.Add(user);
+                }
+                List<User> UsersList = await Mediator.Send(new CreateOnlyUsers.Command { Users = users });
+
+                List<Character> characters = new List<Character>();
+
+                for (int i = 0; i < count * 2; i++)
+                {
+                    Character character = new Character
+                    {
+                        CharacterType = "CharcterType" + i,
+                        Currency = random.Next(1, 1000),
+                        LevelProgression = 1,
+                        User = users[random.Next(0, users.Count() - 1)]
+                    };
+                    characters.Add(character);
+
+                }
+
+                //var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new CreateCharacters.Command { Characters = characters });
+                //stopwatch.Stop();
+                //createDTO.AddOneToMany(stopwatch.ElapsedMilliseconds);
+
+                List<Character> charactersDelete = await Mediator.Send(new GetCharactersRandom.Query { count = count });
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new DeleteCharacters.Command { Characters = charactersDelete });
+                stopwatch.Stop();
+                deleteDTO.AddOneToMany(stopwatch.ElapsedMilliseconds);
+
+
+
+                List<Character> charactersList = await Mediator.Send(new GetCharactersWOutGuild.Query { });
+
+                List<Guild> guilds = new List<Guild>();
+                for (int i = 0; i < count; i++)
+                {
+                    Guild guild = new Guild
+                    {
+                        Name = GenerateRandomString(12),
+                        LevelProgression = random.Next(1, 10)
+                    };
+                    Character c = charactersList[random.Next(0, (charactersList.Count - 1))];
+                    guild.add(c);
+                    charactersList.Remove(c);
+
+                    Character c1 = charactersList[random.Next(0, (charactersList.Count - 1))];
+                    guild.add(c1);
+                    charactersList.Remove(c1);
+
+                    guilds.Add(guild);
+
+                }
+                //Stopwatch stopwatch1 = Stopwatch.StartNew();
+                List<Guild> guildList = await Mediator.Send(new CreateGuilds.Command { Guilds = guilds });
+                //stopwatch1.Stop();
+                //createDTO.AddOneToMany(stopwatch.ElapsedMilliseconds);
+
+                List<Guild> guildsDelete = await Mediator.Send(new GetGuildsLimit.Query { count = count });
+                var stopwatch1 = Stopwatch.StartNew();
+                await Mediator.Send(new DeleteGuilds.Command { Guilds = guildsDelete });
+                stopwatch1.Stop();
+                deleteDTO.AddOneToMany(stopwatch1.ElapsedMilliseconds);
+            }
+
+
+            for (int j = 0; j < 5; j++)
+            {
+                List<Equipment> equipments = await Mediator.Send(new GetEquipmentsRandom.Query { count = count });
+                List<Character> characters = await Mediator.Send(new GetCharactersRandom.Query { count = count });
+
+                List<Character> charactersWithEquipments = new List<Character>();
+                Character character = null;
+                for (int i = 0; i < count; i++)
+                {
+                    int addEqCount = random.Next(0, count);
+                    character = characters[random.Next(0, characters.Count - 1)];
+                    for (int z = 0; z < addEqCount; z++)
+                    {
+                        character.add(equipments[random.Next(0, equipments.Count - 1)]);
+                    }
+                    charactersWithEquipments.Add(character);
+                    characters.Remove(character);
+                    i += addEqCount;
+                }
+
+                //Stopwatch stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new AddEquipmentsToCharacters.Command { CharactersWithEquipments = charactersWithEquipments });
+                //stopwatch.Stop();
+                //createDTO.AddManyToMany(stopwatch.ElapsedMilliseconds);
+
+                List<Equipment> equipmentsDelete = await Mediator.Send(new GetEquipmentsUsed.Query { count = count });
+                var stopwatch1 = Stopwatch.StartNew();
+                await Mediator.Send(new DeleteEquipments.Command { Equipments = equipmentsDelete });
+                stopwatch1.Stop();
+                deleteDTO.AddManyToMany(stopwatch1.ElapsedMilliseconds);
+            }
+
+
+            for (int j = 0; j < 5; j++)
+            {
+                List<Character> characters = await Mediator.Send(new GetCharactersRandom.Query { count = count });
+                List<Boss> bosses = await Mediator.Send(new GetBossesLimit.Query { limit = count });
+
+                List<Fight> fights = new List<Fight>();
+
+                for (int i = 0; i < count; i++)
+                {
+                    long characterId = characters[random.Next(0, characters.Count - 1)].Id;
+                    long bossId = bosses[random.Next(0, bosses.Count - 1)].Id;
+
+                    // Check if a fight with the same CharacterId and BossId already exists in the fights list
+                    if (!fights.Any(f => f.CharacterId == characterId && f.BossId == bossId))
+                    {
+                        Fight fight = new Fight
+                        {
+                            CharacterId = characterId,
+                            BossId = bossId,
+                            IsCharacterWin = new Random().Next(0, 2) == 1,
+                            Time = DateTime.UtcNow
+                        };
+                        fights.Add(fight);
+                    }
+                    else
+                    {
+                        i--;
+                    }
+
+                }
+                //Stopwatch stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new AddFights.Command { Fights = fights });
+                //stopwatch.Stop();
+                //createDTO.AddManyToMany(stopwatch.ElapsedMilliseconds);
+
+
+                List<Fight> fightsDelete = await Mediator.Send(new GetFightsLimit.Query { count = count });
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new DeleteFights.Command { Fights = fightsDelete });
+                stopwatch.Stop();
+                deleteDTO.AddManyToMany(stopwatch.ElapsedMilliseconds);
+            }
+
 
             return deleteDTO;
         }

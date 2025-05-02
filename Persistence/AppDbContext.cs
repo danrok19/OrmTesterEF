@@ -41,6 +41,12 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .HasForeignKey(f => f.BossId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Character>()
+            .HasOne(c => c.Guild)
+            .WithMany(g => g.Characters)
+            .HasForeignKey(c => c.GuildId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<Equipment>()
             .HasMany(e => e.Characters)
             .WithMany(c => c.Equipments)
