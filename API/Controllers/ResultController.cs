@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Persistence;
+using System;
 using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 
@@ -150,7 +151,7 @@ namespace API.Controllers
                     {
                         CharacterType = "CharcterType" + i,
                         Currency = random.Next(1, 1000),
-                        //LevelProgression = 1,
+                        LevelProgression = 1,
                         User = users[random.Next(0, users.Count() - 1)]
                     };
                     characters.Add(character);
@@ -435,12 +436,145 @@ namespace API.Controllers
                 stopwatch.Stop();
                 updateDTO.AddManyToMany(stopwatch.ElapsedMilliseconds);
             }
-            
-            
 
 
             return updateDTO;
         }
+
+
+        [HttpDelete("delete/{count}")]
+        public async Task<ActionResult<DeleteDTO>> DeleteUsers(int count)
+        {
+            DeleteDTO deleteDTO = new DeleteDTO();
+            for (int j = 0; j < 4; j++)
+            {
+                List<User> users = new List<User>();
+                for (int i = 0; i < count; i++)
+                {
+                    User user = new User
+                    {
+                        Username = GenerateRandomString(20),
+                        Password = GenerateRandomString(15)
+                    };
+
+                    users.Add(user);
+                }
+                //var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new CreateOnlyUsers.Command { Users = users });
+                //stopwatch.Stop();
+                //createDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
+
+
+                List<User> usersDelete = await Mediator.Send(new GetUsersWoutAny.Query { count = count });
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new DeleteOnlyUsers.Command { Users = usersDelete });
+                stopwatch.Stop();
+                deleteDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
+
+            }
+            var random = new Random();
+
+            for ( int j = 0; j < 3; j++)
+            {
+                List<Boss> bosses = new List<Boss>();
+                for (int i = 0; i < count; i++)
+                {
+                    Boss boss = new Boss
+                    {
+                        Name = GenerateRandomString(18),
+                        DifficultyLevel = random.Next(1, 101)
+                    };
+
+                    bosses.Add(boss);
+                }
+                //var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new CreateOnlyBosses.Command { Bosses = bosses });
+                //stopwatch.Stop();
+                //createDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
+
+                List<Boss> bossesDelete = await Mediator.Send(new GetBossesWoutFight.Query { count = count });
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new DeleteOnlyBosses.Command { Bosses = bossesDelete });
+                stopwatch.Stop();
+                deleteDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
+            }
+
+            for ( int j = 0; j < 3; j++)
+            {
+                List<Equipment> equipments = new List<Equipment>();
+                for (int i = 0; i < count; i++)
+                {
+                    Equipment equipment = new Equipment
+                    {
+                        Name = GenerateRandomString(18),
+                        Type = GenerateRandomString(10),
+                        Statistics = random.Next(1, 1000),
+                        Cost = random.Next(1, 10000),
+                    };
+                    equipments.Add(equipment);
+                }
+                //var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new CreateOnlyEquipments.Command { Equipments = equipments });
+                //stopwatch.Stop();
+                //createDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
+
+                List<Equipment> equipmentsDelete = await Mediator.Send(new GetEquipmentWoutCharacter.Query { count = count });
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new DeleteOnlyEquipments.Command { Equipments = equipmentsDelete });
+                stopwatch.Stop();
+                deleteDTO.AddOnlyEntity(stopwatch.ElapsedMilliseconds);
+
+            }
+
+
+            for (int j = 0; j < 10; j++)
+            {
+                List<User> users = new List<User>();
+                for (int i = 0; i < count; i++)
+                {
+                    User user = new User
+                    {
+                        Username = GenerateRandomString(20),
+                        Password = GenerateRandomString(15)
+                    };
+
+                    users.Add(user);
+                }
+                List<User> UsersList = await Mediator.Send(new CreateOnlyUsers.Command { Users = users });
+
+                List<AccountDetails> accountDetails = new List<AccountDetails>();
+
+                for (int i = 0; i < count; i++)
+                {
+                    AccountDetails details = new AccountDetails
+                    {
+                        Email = GenerateRandomString(20) + "@mail.com",
+                        IsPremium = false,
+                        //SignupDate = DateTime.Today,
+                        User = users[i]
+                    };
+                    accountDetails.Add(details);
+
+                }
+                //var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new CreateAccountDetails.Command { AccountDetails = accountDetails });
+                //stopwatch.Stop();
+                //createDTO.AddOneToOne(stopwatch.ElapsedMilliseconds);
+
+
+                List<AccountDetails> accountDetailsDelete = await Mediator.Send(new GetAccountDetailsLimit.Query { count = count });
+                var stopwatch = Stopwatch.StartNew();
+                await Mediator.Send(new DeleteAccountDetails.Command { AccountDetails = accountDetailsDelete });
+                stopwatch.Stop();
+                deleteDTO.AddOneToOne(stopwatch.ElapsedMilliseconds);
+            }
+
+
+
+            return deleteDTO;
+        }
+
+
 
 
 

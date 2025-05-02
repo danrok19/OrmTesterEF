@@ -17,6 +17,9 @@ namespace Domain
         [Column("currency")]
         public long Currency { get; set; }
 
+        [Column("level_progression")]
+        public int LevelProgression { get; set; }
+
         [ForeignKey("User")]
         [Column("user_id")]
         public long UserId { get; set; }

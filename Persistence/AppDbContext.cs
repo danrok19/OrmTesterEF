@@ -19,6 +19,13 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<User>()
+        .HasOne(u => u.AccountDetails)
+        .WithOne(a => a.User)
+        .HasForeignKey<User>(u => u.AccountDetailsId)
+        .OnDelete(DeleteBehavior.SetNull);
+
+
         modelBuilder.Entity<Fight>()
             .HasKey(f => new { f.CharacterId, f.BossId });
 
