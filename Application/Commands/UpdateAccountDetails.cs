@@ -30,11 +30,12 @@ namespace Application.Commands
                     var newData = request.AccountDetails[i];
 
                     var existingAccountDetails = await context.AccountDetails.FindAsync(accountDetails.Id);
+                    //Console.WriteLine("TU: " + (existingAccountDetails != null));
                     if (existingAccountDetails != null)
                     {
                         existingAccountDetails.Email = newData.Email;
                         existingAccountDetails.IsPremium = newData.IsPremium;
-                        //existingAccountDetails.SignupDate = newData.SignupDate;
+                        existingAccountDetails.SignupDate = newData.SignupDate;
 
                         updatedAccountDetails.Add(existingAccountDetails);
                     }
